@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <title>EcoFlow AI - Real-time Mostar</title>
+    <style>
+        body, html { height: 100%; margin: 0; font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('Buna.jpg') no-repeat center center fixed;
+            background-size: cover; display: flex; justify-content: center; align-items: center; color: white; }
+        .card { background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); padding: 40px; border-radius: 30px; width: 850px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+        h1 { color: #00d4ff; font-size: 50px; text-transform: uppercase; margin-bottom: 20px; font-weight: 900; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .box { background: rgba(255,255,255,0.05); padding: 25px; border-radius: 15px; border-bottom: 4px solid #00ff88; text-align: left; }
+        .label { color: #00ff88; font-size: 11px; font-weight: bold; display: block; margin-bottom: 10px; }
+        .value { color: #ffcc00; font-size: 45px; font-weight: bold; margin: 0; }
+        .unit { font-size: 18px; color: white; margin-left: 5px; }
+        .status { margin-top: 30px; border: 2px solid #00ff88; color: #00ff88; padding: 15px; border-radius: 50px; font-weight: bold; text-transform: uppercase; }
+        .critical { border-color: #ff4d4d; color: #ff4d4d; background: rgba(255,77,77,0.1); }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>EcoFlow AI.</h1>
+        <div class="grid">
+            <div class="box"><span class="label">UKUPNI DOTOK (HE MOSTAR)</span><p class="value"><span id="q">0</span><span class="unit">m³/s</span></p></div>
+            <div class="box"><span class="label">VODOSTAJ (UŽIVO CARINSKI MOST)</span><p class="value"><span id="v">0</span><span class="unit">cm</span></p></div>
+            <div class="box"><span class="label">BIOLOŠKI MINIMUM (RIJEKE NERETVE)</span><p class="value"><span id="b">50</span><span class="unit">m³/s</span></p></div>
+            <div class="box"><span class="label">AI PROGNOZA RAZINE (1h)</span><p class="value"><span id="p">0</span><span class="unit">cm</span></p></div>
+        </div>
+        <div class="status" id="st">POVEZIVANJE S WEBA...</div>
+    </div>
+    <script>
+        function update() {
+            fetch('http://127.0.0.1:5000/predict_autonomo')
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('q').innerText = data.q;
+                    document.getElementById('v').innerText = data.v;
+                    document.getElementById('b').innerText = data.b;
+                    document.getElementById('p').innerText = (data.p > 0 ? "+" : "") + data.p;
+                    
+                    const st = document.getElementById('st');
+                    st.innerText = data.status;
+                    if(data.alarm === 'critical') st.className = "status critical";
+                    else st.className = "status";
+                });
+        }
+        setInterval(update, 5000); update();
+    </script>
+</body>
+</html>
